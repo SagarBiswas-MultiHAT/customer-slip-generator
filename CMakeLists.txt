@@ -6,6 +6,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Ensure test and app binaries land in a configuration-agnostic location so
+# ctest can run without requiring -C on multi-config generators (e.g. MSVC).
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+if(CMAKE_CONFIGURATION_TYPES)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER "${config}" config_upper)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${config_upper} ${CMAKE_BINARY_DIR})
+    endforeach()
+endif()
+
 add_executable(customer_slip src/customer_slip.cpp)
 
 target_include_directories(customer_slip
@@ -56,4 +66,6 @@ target_compile_options(tests PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
 )
 
-add_test(NAME customer_slip_tests COMMAND tests)
+add_test(NAME customer_slip_tests
+    COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tests${CMAKE_EXECUTABLE_SUFFIX}
+)
