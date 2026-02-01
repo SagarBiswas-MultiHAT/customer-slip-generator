@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-slip-${{ matrix.os }}
+          path: |
+            build/**/customer_slip
+            build/**/customer_slip.exe
+
+      - name: Upload slip data (if any)
+        uses: actions/upload-artifact@v4
+        with:
+          name: slips-${{ matrix.os }}
+          path: |
+            data/slips.csv
+            data/slips.jsonl
+          if-no-files-found: ignore
