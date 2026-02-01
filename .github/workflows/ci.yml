@@ -23,7 +23,7 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build --output-on-failure -C Release
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
